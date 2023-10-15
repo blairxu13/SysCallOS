@@ -1,0 +1,55 @@
+.TH Project_1
+.SH NAME
+                 \" Section Header - required - don't modify
+ Project 1
+.SH SYNOPSIS
+         \" Section Header - required - don't modify
+ to practice systems call in Linux
+.SH DESCRIPTION
+
+Step 1:
+\" Section Header - required - don't modify
+used command: I went into the directory of /include/linux, as a intention to put down "asmlinkage" for my three methods:getnum, returnnum, print the message. Why: The rubric asked for three methods that return different things with global variable.
+
+Step 2:
+
+Then in the /arch/x86/entry/syscalls, I added the call number for each function, which are 435,436,437 why: it makes room for sys calls, also system know when we call it, which method is it talking about
+
+Step 3:
+
+Then in the kernel directory, I found the file sys.c, where I write down my functions. Why: sys.c should be where the functions defines.
+
+Step 4:
+
+In side of sys.c, I start writing the functions itself. I first create a global variable called go, which will be returned as the "current level"; and according to functions and its constraints, I finished writing the functions, then run sudo make & install, and close the vm, to reboot it. Why: reboot after modification to kernel is necessary.
+
+Step 5:
+
+Then I start writing harness function & library functions. I created a directory called process_log, and created libprocess_log.a, process_log.h, and process_log.c. I write the main functions in the process_log.c. why: testing to see if output matches (if function works)
+
+Step 6:
+
+After I done writing the process_log.c. I created a makefile. (Make file to run programs, also generate the library)
+
+Step 7:
+
+After running the makefile, I get the testing files from the canvas, transfer it to vm, and test it out, and if some errors happen, I go back and change, then sudo make&install, and reboot the machine, till running no errors. (Why: testing is necessary and debugging is necessary)
+
+.SH  Testing
+
+Used the testing file provided to test. Mainly use the library and harness function cpp file to test my code. When I run the testing (harness one) first time, it doesn't work, I figured out that I have to use g++ instead of gcc to run; after it, when testing with harness function, it still gives me error, and I realized it has to do with my print functions. The problem is that when it is supposed to print, it didn't; and when it supposed to fail, it also didn't return -1; I figured out it's because I didn't return the global variable at the end of the each if statement in printing function, and I didn't return -1 at the end of the whole method as if it is the condition that input is incorrect. After I passed the harness testing, I also passed other testing files as well/
+
+.SH  Bugs
+
+The bugs I ran into will be bugs I had in my sysc. I found out whenever it's not printing, it has to do with my printing functions, and at the end I figured out it's because that I didn't return my global variable at the end.
+
+.SH Link 
+
+https://www.youtube.com/watch?v=lcYZO5hZucA
+
+
+.SH  Reference
+Use https://roperzh.github.io/grapse to help with formatting
+the man file
+.SH Author
+Jiachenxu Xu

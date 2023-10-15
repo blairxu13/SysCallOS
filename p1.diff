@@ -1,0 +1,146 @@
+diff --git a/arch/x86/entry/syscalls/syscall_64.tbl b/arch/x86/entry/syscalls/syscall_64.tbl
+index bbfc6d440870..27e85df8a645 100644
+--- a/arch/x86/entry/syscalls/syscall_64.tbl
++++ b/arch/x86/entry/syscalls/syscall_64.tbl
+@@ -346,6 +346,9 @@
+ 424	common	pidfd_send_signal	__x64_sys_pidfd_send_signal
+ 434	common	pidfd_open		__x64_sys_pidfd_open
+ 
++435     common getNum                  __x64_sys_getNum
++436     common returnNum                __x64_sys_returnNum
++437     common changeMsg                __x64_sys_changeMsg
+ #
+ # x32-specific system call numbers start at 512 to avoid cache impact
+ # for native 64-bit operation. The __x32_compat_sys stubs are created
+@@ -388,3 +391,4 @@
+ 545	x32	execveat		__x32_compat_sys_execveat/ptregs
+ 546	x32	preadv2			__x32_compat_sys_preadv64v2
+ 547	x32	pwritev2		__x32_compat_sys_pwritev64v2
++
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index 8e5b2c6d5dea..15569cd0dd0b 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -1297,4 +1297,12 @@ static inline unsigned int ksys_personality(unsigned int personality)
+ 	return old;
+ }
+ 
++
++
++//project 1
++asmlinkage int returnNum(void);
++asmlinkage int getNum(int loglevel);
++asmlinkage int changeMsg (char* msg,int level);
++
+ #endif
++
+diff --git a/init/main.c b/init/main.c
+index 02f6b6bd6a17..a907b275fce2 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -1109,6 +1109,8 @@ static int __ref kernel_init(void *unused)
+ 	system_state = SYSTEM_RUNNING;
+ 	numa_default_policy();
+ 
++	pr_err("### Jiachen Xu (Exercise 2) ###");
++
+ 	rcu_end_inkernel_boot();
+ 
+ 	if (ramdisk_execute_command) {
+diff --git a/kernel/sys.c b/kernel/sys.c
+index 0a1cdee858de..b21c74a75e9d 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -148,6 +148,7 @@ EXPORT_SYMBOL(overflowgid);
+ 
+ int fs_overflowuid = DEFAULT_FS_OVERFLOWUID;
+ int fs_overflowgid = DEFAULT_FS_OVERFLOWGID;
++int og = 0;
+ 
+ EXPORT_SYMBOL(fs_overflowuid);
+ EXPORT_SYMBOL(fs_overflowgid);
+@@ -2805,5 +2806,84 @@ COMPAT_SYSCALL_DEFINE1(sysinfo, struct compat_sysinfo __user *, info)
+ 		return -EFAULT;
+ 
+ 	return 0;
++
++}
++
++SYSCALL_DEFINE1(getNum,int,loglevel){
++    //if log level is not valid, return failure
++if (loglevel > 7 || loglevel < 0) {
++return  -1;
++}else {
++    //else check if it is sudo mode, if it is then change the og and return the og
++if (current_uid().val == 0 ){
++og = loglevel;
++return og;
++} else {
++    //if not sudo mode, then return failture
++    return -1;
++}
++}
++
++}
++
++
++SYSCALL_DEFINE0(returnNum){
++    //nothing paticular
++return og;
++}
++
++
++SYSCALL_DEFINE2(changeMsg,char*, msg, int, level) {
++    char actual[129];
++    copy_from_user(actual, msg, 129);
++
++   // if (getuid() = 0 ){
++if  (level >og) {
++    //if the level is higher, return the level message
++return level;
++} else  {
++    //if the level is lower, but the msg too long,then return failture
++
++    // the msg is perfect length
++if (level ==0 ) {
++
++printk (KERN_EMERG "PROC_OVERRIDE [%s, %d]: %s",current->comm, current->pid, actual);
++return og;
++}
++if (level ==1 ) {
++printk (KERN_ALERT "PROC_ALERT [%s, %d]: %s",current->comm, current->pid, actual);
++return og;
++}
++if (level ==2 ) {
++printk (KERN_CRIT "PROC_CRITICAL [%s, %d]: %s",current->comm, current->pid, actual);
++return og;
++}
++if (level ==3 ) {
++printk (KERN_ERR  "PROC_ERROR [%s, %d]: %s",current->comm, current->pid, actual);
++return og;
++}
++if (level ==4 ) {
++printk (KERN_WARNING  "PROC_WARNING [%s, %d]: %s",current->comm, current->pid, actual);
++return og;
++}
++if (level ==5 ) {
++printk (KERN_NOTICE  "PROC_NOTICE [%s, %d]: %s",current->comm, current->pid, actual);
++return og;
++}
++if (level ==6 ) {
++printk (KERN_INFO  "PROC_INFO [%s, %d]: %s",current->comm, current->pid, actual);
++return og;
+ }
++if (level ==7 ) {
++printk (KERN_DEBUG  "PROC_DEBUG [%s, %d]: %s",current->comm, current->pid, actual);
++return og;
++}
++}
++return -1;
++}
++
++
++
++
+ #endif /* CONFIG_COMPAT */
++ 
